@@ -1,1 +1,141 @@
+#coding:utf8
 
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import re
+import os
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
+from matplotlib.patches import FancyBboxPatch, FancyArrowPatch
+
+# ... reste de ton code
+# Source des données : https://www.data.gouv.fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/
+
+# Sources des données : production de M. Forriez, 2016-2023
+
+
+df = pd.read_csv("./data/island-index.csv")
+print(df)
+#question 5
+colonnes_quanti = df.select_dtypes(include=['number'])
+print(colonnes_quanti)
+
+#calculer les moyennes
+moyennes = colonnes_quanti.mean().round(2)
+print(moyennes)
+
+#réponse
+#Trait de côte (km)       12.82
+#Surface (km²)           117.72
+#Latitude                  9.58
+#Longitude                21.17
+
+#calculer les mediannes
+mediannes = colonnes_quanti.median().round(2)
+print(mediannes)
+
+#réponse
+# Trait de côte (km)        2.23
+#Surface (km²)             0.18
+#Latitude                 10.47
+#Longitude                25.11
+
+#calculer les modes
+print("\nCalcul des modes:")
+modes = colonnes_quanti.mode().iloc[0].round(2)
+print(modes)
+#réponse
+#Trait de côte (km)     0.12
+#Surface (km²)          0.00
+#Latitude             -73.00
+#Longitude             22.00
+
+#calculer les ecarts-types
+print("\nCalcul des écarts-types:")
+ecarts_types = colonnes_quanti.std().round(2)
+print(ecarts_types)
+#réponse 
+#Trait de côte (km)      224.70
+#Surface (km²)          8997.06
+#Latitude                 97.56
+#Longitude                36.12
+
+#calculer l'ecart absolue moyenne
+print("\nCalcul des écarts absolus moyens:")
+ecart_absolue_moyenne = np.abs(colonnes_quanti - colonnes_quanti.mean()).mean().round(2)
+print(ecart_absolue_moyenne)   
+#réponse 
+# Trait de côte (km)       17.57
+#Surface (km²)           226.71
+#Latitude                 86.90
+#Longitude                30.30        
+
+#calculer l'etendue de chaque colonnes
+print("\nCalcul des étendues:")
+etendues = (colonnes_quanti.max() - colonnes_quanti.min()).round(2)
+print(etendues)
+#réponse
+#TTrait de côte (km)      39577.14
+#Surface (km²)         2117507.76
+#Latitude                  359.97
+#Longitude                 162.80
+
+# Question 7 : Calculer la distance interquartile (IQR)
+print("Calcul de la distance interquartile (IQR) :")
+Q1 = colonnes_quanti.quantile(0.25)
+Q3 = colonnes_quanti.quantile(0.75)
+IQR = (Q3 - Q1).round(2)
+print(IQR)
+#réponse
+#Trait de côte (km)        3.88
+#Surface (km²)             0.78
+#Latitude                189.96
+#Longitude                57.63
+
+# Calculer la distance interdécile
+print("\nCalcul de la distance interdécile :")
+D1 = colonnes_quanti.quantile(0.10)
+D9 = colonnes_quanti.quantile(0.90)
+distance_interdecile = (D9 - D1).round(2)
+print(distance_interdecile)
+#réponse
+#Trait de côte (km)       13.20
+#Surface (km²)             4.87
+#Latitude                240.24
+#Longitude                98.56
+
+#Question 8
+
+if not os.path.exists('img'):
+    os.makedirs('img')
+
+for colonne in colonnes_quanti.columns:
+    plt.figure(figsize=(8, 6))
+    plt.boxplot(colonnes_quanti[colonne].dropna())
+    plt.title(f'Boîte à moustache - {colonne}')
+    plt.ylabel(colonne)
+    plt.grid(True, alpha=0.3)
+    
+    nom_fichier = f'img/boxplot_{colonne.replace(" ", "_").replace("(", "").replace(")", "")}.png'
+    plt.savefig(nom_fichier, dpi=300, bbox_inches='tight')
+    plt.close()
+    print(f"Graphique sauvegardé : {nom_fichier}")
+
+
+# Question 9 : Catégorisation des îles par surface
+surface = df['Surface (km²)']
+categories = {
+    ']0-10]': 0,
+    ']10-25]': 0,
+    ']25-50]': 0,
+    ']50-100]': 0,
+    ']100-2500]': 0,
+    ']2500-5000]': 0,
+    ']5000-10000]': 0,
+    ']10000+[': 0
+}
+for valeur in surface:
+    if pd.notna(valeur):  # Vérifier que la valeur n'est pas NaN
+        if 0 < valeur <= 10:
+            categories[']0-10]'] += 1
